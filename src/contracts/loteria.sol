@@ -33,7 +33,7 @@ contract loteria is ERC20, Ownable {
     }
 
     // Agrega esta función en tu contrato "loteria"
-    function obtenerPrecioTokens(uint256 _numTokens) public view returns (uint256) {
+    function obtenerPrecioTokens(uint256 _numTokens) public pure returns (uint256) {
         return precioTokens(_numTokens);
     }
 
