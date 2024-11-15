@@ -16,7 +16,9 @@ class App extends Component {
       precioBoleto: '0',
       balanceCuenta: 'undefined',
       numTokens: 0,
-      balanceTokens: '0'
+      balanceTokens: '0',
+      cantidadBoletos: '0',
+      ganador: 'Aun no ha salido ganador'
     };
   }
 
@@ -61,6 +63,13 @@ class App extends Component {
       const balanceTokens = await loteria.methods.balanceTokens(this.state.account).call()
       this.setState({balanceTokens: balanceTokens.toString()})
 
+      const cantidadBoletos = await loteria.methods.tusBoletos(this.state.account).call()
+      console.log("Cantidad de boletos que posees: ", cantidadBoletos.length)
+      this.setState({cantidadBoletos: cantidadBoletos.length})
+
+      const ganador = await loteria.methods.ganador().call()
+      this.setState({ganador: ganador})
+
     } else {
       alert("El contrato loteria no se ha desplegado correctamente");
     }
@@ -89,6 +98,25 @@ class App extends Component {
       Swal.fire('Error', error.message || 'Hubo un problema al comprar los tokens', 'error');
     }
   }
+
+  async comprarBoleto(_numeroBoletos){
+    try{
+      await this.state.loteria.methods.compraBoleto(_numeroBoletos).send({from: this.state.account})
+      Swal.fire('Éxito', 'Boletos comprados exitosamente', 'success');
+    } catch(error){
+      Swal.fire('Error', error.message || 'Hubo un problema al comprar los boletos', 'error');
+    }
+    
+  }
+
+  async generarGanador(){
+    try{
+      await this.state.loteria.methods.generarGanador().send({from: this.state.account})
+    }catch(error){
+      Swal.fire('Error', error.message || 'Hubo un problema generar el ganador', 'error');
+    }
+    
+  }
   
   
 
@@ -111,6 +139,38 @@ class App extends Component {
               <div className="content">
                 <h3>El saldo de la cuenta es: {this.state.balanceTokens} Tokens</h3>
               </div>
+            </main><br></br><br></br><br></br><br></br><br></br><br></br><br></br>
+            <main role="main" className="col-lg-12 d-flex justify-content-center">
+            <div className="content">
+              <h1>Compra de Boletos</h1>
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+
+                let numeroBoletos = this.numeroBoletos.value
+
+                await this.comprarBoleto(numeroBoletos)
+              }}>
+                <input
+                ref={(numeroBoletos) => {this.numeroBoletos = numeroBoletos}}
+                placeholder='Numero de boletos...'
+                required
+                />
+                <button type='submit'>Comprar Boleto</button>
+              </form>
+              <div className='content'>
+                <span>Tienes {this.state.cantidadBoletos} boletos.</span> 
+              </div>
+            </div>
+            </main><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br>
+            <main role="main" className="col-lg-12 d-flex justify-content-center">
+              <div className='content'>
+                <button onClick={async (e) => {
+                  e.preventDefault()
+                  await this.generarGanador()
+                } }>Generar Ganador</button>
+              </div>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <h1>El ganador es: {this.state.ganador}</h1>
             </main>
           </div>
         </div>
