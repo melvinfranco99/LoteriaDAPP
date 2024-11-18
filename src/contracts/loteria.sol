@@ -43,6 +43,10 @@ contract loteria is ERC20, Ownable {
         return balanceOf(_account);
     }
 
+    function verBalance(address _account) public view returns (uint256){
+        return _account.balance;
+    }
+
     // Visualizacion del balance de tokens ERC-20 del Smart Contract
     function balanceTokensSC() public view returns (uint256){
         return balanceOf(address(this));

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect } from 'react';
 import Loteria from '../abis/loteria.json';
 import Web3 from 'web3';
 import Navigation from './Navbar';
@@ -18,9 +18,14 @@ class App extends Component {
       numTokens: 0,
       balanceTokens: '0',
       cantidadBoletos: '0',
-      ganador: 'Aun no ha salido ganador'
+      ganador: 'Aun no ha salido ganador',
+      verBalance: '0'
     };
   }
+
+
+
+
 
   async componentDidMount() {
     // 1. Carga de Web3
@@ -70,6 +75,9 @@ class App extends Component {
       const ganador = await loteria.methods.ganador().call()
       this.setState({ganador: ganador})
 
+      const verBalance = await loteria.methods.verBalance(this.state.account).call()
+      this.setState({verBalance: verBalance.toString()})
+
     } else {
       alert("El contrato loteria no se ha desplegado correctamente");
     }
@@ -93,6 +101,8 @@ class App extends Component {
   
       await loteria.methods.compraTokens(numTokens).send({ from: account, value: costoTokens });
       Swal.fire('Éxito', 'Tokens comprados exitosamente', 'success');
+      
+      
     } catch (error) {
       console.error('Error al comprar tokens:', error);
       Swal.fire('Error', error.message || 'Hubo un problema al comprar los tokens', 'error');
@@ -117,13 +127,29 @@ class App extends Component {
     }
     
   }
+
+  async sacarTokens(_cantidad){
+    try{
+      await this.state.loteria.methods.devolverTokens(_cantidad).send({from: this.state.account, value: 0})
+    }catch(error){
+      Swal.fire('Error', error.message || 'Hubo un problema al devolver los tokens')
+    }
+  }
+
+  
   
   
 
   render() {
+    if(this.state.ganador == '0x0000000000000000000000000000000000000000'){
+      this.state.ganador = 'Aun no ha salido ganador'
+    }
     return (
       <div>
         <Navigation account={this.state.account} />
+        <div className='content'>
+          <h1>Tu balance actual es: {this.state.verBalance / 10**18} Ethers</h1>
+        </div>
         <div className="container-fluid mt-5">
           <div className="row">
             <main role="main" className="col-lg-12 d-flex justify-content-center">
@@ -135,6 +161,22 @@ class App extends Component {
                   onChange={(e) => this.setState({ numTokens: e.target.value })}
                 />
                 <button onClick={this.compraTokens}>Comprar Tokens</button>
+              </div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <div className="content">
+                <h1>Devolución de Tokens</h1>
+                <form onSubmit={async (e) => {
+                  e.preventDefault()
+
+                  let devolucion = this.devolucion.value
+                  await this.sacarTokens(devolucion)
+                }}>
+                  <input
+                  ref={(devolucion) => {this.devolucion = devolucion}}
+                  placeholder='0'
+                  required
+                  />
+                  <button type='submit' className='btn btn-success'>Devolver</button>
+                </form>
               </div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
               <div className="content">
                 <h3>El saldo de la cuenta es: {this.state.balanceTokens} Tokens</h3>
@@ -158,7 +200,7 @@ class App extends Component {
                 <button type='submit'>Comprar Boleto</button>
               </form>
               <div className='content'>
-                <span>Tienes {this.state.cantidadBoletos} boletos.</span> 
+                <h4>Tienes {this.state.cantidadBoletos} boletos.</h4> 
               </div>
             </div>
             </main><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br>
