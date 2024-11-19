@@ -136,6 +136,16 @@ class App extends Component {
     }
   }
 
+  async transferir(_direccion, _cantidad){
+    let cantidad = _cantidad*10**18
+    try{
+      await this.state.loteria.methods.transferEther(_direccion).send({from: this.state.account, value: cantidad})
+    }catch(error){
+      Swal.fire('Error', error.message || 'Hubo un problema al transferir los Ethers')
+    }
+    
+  }
+
   
   
   
@@ -149,6 +159,33 @@ class App extends Component {
         <Navigation account={this.state.account} />
         <div className='content'>
           <h1>Tu balance actual es: {this.state.verBalance / 10**18} Ethers</h1>
+        </div><br></br><br></br>
+        
+        <div className='content'>
+          <h2>Transferir Ethers</h2>
+          
+          <form onSubmit={async (e) => {
+            e.preventDefault()
+
+            let direccion = this.direccion.value
+            let cantidad = this.cantidad.value
+
+            await this.transferir(direccion, cantidad)
+          }}>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input
+            ref={(direccion) => {this.direccion = direccion}}
+            placeholder='0x0...'
+            required
+            /><br></br><br></br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input
+            ref={(cantidad) => {this.cantidad = cantidad}}
+            placeholder='0'
+            required
+            /><br></br><br></br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <button type='submit' className='btn btn-primary'>Enviar Ethers</button>
+          </form>
+
         </div>
         <div className="container-fluid mt-5">
           <div className="row">
